@@ -123,7 +123,7 @@ const Register = () => {
               type="text"
               name="username"
               value={nombre}
-              onChange={handleRegister}
+              onChange={(e) => setNombre(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />
@@ -134,7 +134,7 @@ const Register = () => {
               type="email"
               name="email"
               value={email}
-              onChange={handleRegister}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />
@@ -145,7 +145,7 @@ const Register = () => {
               type="password"
               name="password"
               value={password}
-              onChange={handleRegister}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />

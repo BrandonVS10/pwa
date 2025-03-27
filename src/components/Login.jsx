@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerServiceWorkerAndSubscribe } from '../main.jsx';
 
 
 const Login = () => {
@@ -52,10 +51,10 @@ const Login = () => {
           <div>
             <label className="block text-gray-600 mb-1">Usuario</label>
             <input
-              type="text"
-              name="username"
-              value={form.username}
-              onChange={handleLogin}
+              type="email"
+              name="Correo electronico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />
@@ -66,7 +65,7 @@ const Login = () => {
               type="password"
               name="password"
               value={form.password}
-              onChange={handleLogin}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />

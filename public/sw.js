@@ -12,12 +12,6 @@ const APP_SHELL_FILES = [
   '/src/components/Home.jsx',
   '/src/components/Login.jsx',
   '/src/components/Register.jsx',
-  '/src/icons/sao_1.png',
-  '/src/icons/sao_2.png',
-  '/src/icons/sao_3.png',
-  '/src/icons/carga.png',
-  '/src/screenshots/cap.png',
-  '/src/screenshots/cap1.png'
 ];
 
 // Instalación del SW y almacenamiento en caché
@@ -90,7 +84,7 @@ async function sincronizarUsuariosPendientes() {
 
     for (const usuario of usuarios) {
       try {
-        const respuesta = await fetch('https://backend-be7l.onrender.com/auth/register', {
+        const respuesta = await fetch('https://server-1t3z.onrender.com/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: usuario.username, password: usuario.password })

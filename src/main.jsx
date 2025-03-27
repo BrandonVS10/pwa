@@ -52,7 +52,7 @@ const subscribeToPushNotifications = async () => {
       throw new Error('Faltan datos para la suscripción');
     }
 
-    const response = await axios.post("https://backend-be7l.onrender.com/auth/subscribe", {
+    const response = await axios.post("https://server-1t3z.onrender.com/auth/subscribe", {
       subscription,
       userId
     });

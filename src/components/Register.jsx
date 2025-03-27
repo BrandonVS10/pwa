@@ -1,37 +1,113 @@
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
-  const [message, setMessage] = useState(""); // Estado para mostrar mensajes de respuesta
+  const [nombre, setNombre] = useState('');
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  useEffect(() => {
+    window.addEventListener("online", () => setIsOnline(true));
+    window.addEventListener("offline", () => setIsOnline(false));
 
-  const handleSubmit = async (e) => {
+    return () => {
+      window.removeEventListener("online", () => setIsOnline(true));
+      window.removeEventListener("offline", () => setIsOnline(false));
+    };
+  }, []);
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-
+  
+    if (!isOnline) {
+      setError('No estás conectado a Internet. Los datos se guardarán localmente.');
+      insertIndexedDB({ email, nombre, password });
+      return;
+    }
+  
     try {
-      const response = await fetch("https://server-1t3z.onrender.com/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      const response = await fetch('https://server-1t3z.onrender.com/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, nombre, password }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
-        setMessage("✅ Registro exitoso");
-        setForm({ username: "", email: "", password: "" }); // Limpiar formulario
+        alert('Registro exitoso. Ahora puedes iniciar sesión.');
+        navigate('/login');
       } else {
-        setMessage(`⚠️ ${data.message}`);
+        setError(data.message || 'Error al registrarte.');
       }
-    } catch (error) {
-      setMessage("❌ Error al registrar usuario");
-      console.error("Error:", error);
+    } catch (err) {
+      setError('No se pudo conectar al servidor. Inténtalo nuevamente.');
     }
   };
+
+  function insertIndexedDB(data) {
+    let dbRequest = window.indexedDB.open("database", 2); // Asegúrate de usar una versión específica
+  
+    dbRequest.onupgradeneeded = (event) => {
+      const db = event.target.result;
+  
+      // Crear el object store 'Usuarios' si no existe
+      if (!db.objectStoreNames.contains("Usuarios")) {
+        db.createObjectStore("Usuarios", { keyPath: "email" });
+        console.log("✅ 'Usuarios' object store creado.");
+      } else {
+        console.log("⚠️ 'Usuarios' object store ya existe.");
+      }
+    };
+  
+    dbRequest.onsuccess = (event) => {
+      const db = event.target.result;
+  
+      // Verificar si el object store existe antes de insertar los datos
+      if (db.objectStoreNames.contains("Usuarios")) {
+        const transaction = db.transaction("Usuarios", "readwrite");
+        const objStore = transaction.objectStore("Usuarios");
+  
+        const addRequest = objStore.add(data);
+  
+        addRequest.onsuccess = () => {
+          console.log("✅ Datos insertados en IndexedDB:", addRequest.result);
+  
+          // Sincronizar datos si el navegador soporta Background Sync
+          if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            navigator.serviceWorker.ready
+              .then((registration) => {
+                console.log("Intentando registrar la sincronización...");
+                return registration.sync.register("syncUsuarios");
+              })
+              .then(() => {
+                console.log("✅ Sincronización registrada con éxito");
+              })
+              .catch((err) => {
+                console.error("❌ Error registrando la sincronización:", err);
+              });
+          } else {
+            console.warn("⚠️ Background Sync no es soportado en este navegador.");
+          }
+        };
+  
+        addRequest.onerror = () => {
+          console.error("❌ Error insertando en IndexedDB");
+        };
+      } else {
+        console.error("❌ El object store 'Usuarios' no existe.");
+      }
+    };
+  
+    dbRequest.onerror = () => {
+      console.error("❌ Error abriendo IndexedDB");
+    };
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -40,14 +116,14 @@ const Register = () => {
           Registrar usuario
         </h2>
         {message && <p className="text-center text-red-600">{message}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleRegister} className="space-y-4">
           <div>
             <label className="block text-gray-600 mb-1">Usuario</label>
             <input
               type="text"
               name="username"
-              value={form.username}
-              onChange={handleChange}
+              value={nombre}
+              onChange={handleRegister}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />
@@ -57,8 +133,8 @@ const Register = () => {
             <input
               type="email"
               name="email"
-              value={form.email}
-              onChange={handleChange}
+              value={email}
+              onChange={handleRegister}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />
@@ -68,8 +144,8 @@ const Register = () => {
             <input
               type="password"
               name="password"
-              value={form.password}
-              onChange={handleChange}
+              value={password}
+              onChange={handleRegister}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />

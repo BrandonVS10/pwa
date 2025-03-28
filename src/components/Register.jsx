@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
-  const [username, setUsername] = useState('');
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,7 +26,7 @@ const Register = () => {
 
     if (!isOnline) {
       setError('No estás conectado a Internet. Los datos se guardarán localmente.');
-      insertIndexedDB({ email, username, password });
+      insertIndexedDB({ email, nombre, password });
       return;
     }
 
@@ -34,19 +34,24 @@ const Register = () => {
       const response = await fetch('https://server-1t3z.onrender.com/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username, password }),
+        body: JSON.stringify({ email, nombre, password }),
       });
+
+      // Verificar si la respuesta es exitosa
+      if (!response.ok) {
+        // Si la respuesta no es exitosa, lanzar error
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al registrar el usuario.');
+      }
 
       const data = await response.json();
 
-      if (response.ok) {
-        alert('Registro exitoso. Ahora puedes iniciar sesión.');
-        navigate('/login');
-      } else {
-        setError(data.message || 'Error al registrarte.');
-      }
+      // Si la respuesta es exitosa, navegar a login
+      alert('Registro exitoso. Ahora puedes iniciar sesión.');
+      navigate('/login');
     } catch (err) {
       setError('No se pudo conectar al servidor. Inténtalo nuevamente.');
+      console.error(err);
     }
   };
 
@@ -94,8 +99,8 @@ const Register = () => {
             <label className="block text-gray-600 mb-1">Usuario</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required
             />
@@ -133,3 +138,4 @@ const Register = () => {
 };
 
 export default Register;
+

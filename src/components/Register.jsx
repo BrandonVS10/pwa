@@ -30,6 +30,12 @@ const Register = () => {
       return;
     }
 
+    // Validación de campos vacíos antes de hacer el fetch
+    if (!nombre || !email || !password) {
+      setError("Todos los campos son obligatorios");
+      return;
+    }
+
     try {
       const response = await fetch('https://server-1t3z.onrender.com/auth/register', {
         method: 'POST',
@@ -138,4 +144,5 @@ const Register = () => {
 };
 
 export default Register;
+
 

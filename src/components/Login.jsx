@@ -1,46 +1,47 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
-  
-  
-    const handleLogin = async (e) => {
-      e.preventDefault();
-  
-      try {
-        const response = await fetch('https://server-1t3z.onrender.com/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Respuesta del servidor:", data); // Asegúrate de que data.user._Id y data.user.role estén presentes.
-        
-          // Verifica si los valores son correctos antes de guardarlos
-          
-            localStorage.setItem('userId', data.user._id); // Asegúrate de que esto sea correcto
-            localStorage.setItem('userRole', data.user.role); // Asegúrate de que esto sea correcto
-            console.log("ID del usuario guardado:", data.user._id);
-            console.log("Rol del usuario guardado:", data.user.role);
-        
-            alert('✅ Login exitoso');
-            navigate('/main');
-          
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('https://server-1t3z.onrender.com/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json(); // Intenta parsear la respuesta
+
+      if (response.ok) {
+        console.log("Respuesta del servidor:", data);
+
+        if (data.user && data.user._id && data.user.role) {
+          localStorage.setItem('userId', data.user._id);
+          localStorage.setItem('userRole', data.user.role);
+          console.log("ID del usuario guardado:", data.user._id);
+          console.log("Rol del usuario guardado:", data.user.role);
+
+          alert('✅ Login exitoso');
+          navigate('/main');
         } else {
-          throw new Error(data.message || 'Error al iniciar sesión.');
+          throw new Error('Datos de usuario inválidos.');
         }
-      } catch (err) {
-        setError(err.message || 'No se pudo conectar al servidor. Inténtalo nuevamente más tarde.');
+      } else {
+        throw new Error(data.message || 'Error al iniciar sesión.');
       }
-    };
+    } catch (err) {
+      setError(err.message || 'No se pudo conectar al servidor. Inténtalo nuevamente más tarde.');
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -64,7 +65,7 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              value={form.password}
+              value={password} // Aquí corregí el error
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300"
               required

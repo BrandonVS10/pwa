@@ -45,7 +45,6 @@ const Register = () => {
 
       // Verificar si la respuesta es exitosa
       if (!response.ok) {
-        // Si la respuesta no es exitosa, lanzar error
         const errorData = await response.json();
         throw new Error(errorData.message || 'Error al registrar el usuario.');
       }
@@ -56,7 +55,7 @@ const Register = () => {
       alert('Registro exitoso. Ahora puedes iniciar sesión.');
       navigate('/login');
     } catch (err) {
-      setError('No se pudo conectar al servidor. Inténtalo nuevamente.');
+      setError(`Error: ${err.message}`);
       console.error(err);
     }
   };
@@ -73,21 +72,19 @@ const Register = () => {
 
     dbRequest.onsuccess = (event) => {
       const db = event.target.result;
-      if (db.objectStoreNames.contains("Usuarios")) {
-        const transaction = db.transaction("Usuarios", "readwrite");
-        const objStore = transaction.objectStore("Usuarios");
+      const transaction = db.transaction("Usuarios", "readwrite");
+      const objStore = transaction.objectStore("Usuarios");
 
-        const addRequest = objStore.add(data);
-        addRequest.onsuccess = () => {
-          console.log("✅ Datos guardados en IndexedDB:", addRequest.result);
-          if ('serviceWorker' in navigator && 'SyncManager' in window) {
-            navigator.serviceWorker.ready
-              .then((registration) => registration.sync.register("syncUsuarios"))
-              .catch((err) => console.error("❌ Error en la sincronización:", err));
-          }
-        };
-        addRequest.onerror = () => console.error("❌ Error insertando en IndexedDB");
-      }
+      const addRequest = objStore.add(data);
+      addRequest.onsuccess = () => {
+        console.log("✅ Datos guardados en IndexedDB:", addRequest.result);
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+          navigator.serviceWorker.ready
+            .then((registration) => registration.sync.register("syncUsuarios"))
+            .catch((err) => console.error("❌ Error en la sincronización:", err));
+        }
+      };
+      addRequest.onerror = () => console.error("❌ Error insertando en IndexedDB");
     };
 
     dbRequest.onerror = () => console.error("❌ Error abriendo IndexedDB");
